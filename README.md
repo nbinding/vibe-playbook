@@ -22,12 +22,12 @@ See [CHANGELOG.md](./CHANGELOG.md) for version history.
 
 ```sh
 npm install
-npm run dev       # http://localhost:4321
+npm run dev       # http://localhost:4321/vibe-playbook/
 npm run build     # outputs to ./dist
 npm run preview
 ```
 
-Content lives in [`src/content/docs/`](./src/content/docs/) — `playbook/` holds the ten numbered steps, plus `index.mdx`, `how-to-use.md`, and `changelog.md`.
+Content lives in [`src/content/docs/`](./src/content/docs/) — `playbook/` holds the eleven numbered steps, plus `index.mdx`, `how-to-use.md`, and `changelog.md`.
 
 ## Roadmap
 
