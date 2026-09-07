@@ -2,7 +2,7 @@
 
 ## v1.2 — 2026-09-07
 
-Added the Vibe-Spec Tool (`/tool/`): an interactive, entirely client-side page for working through all 14 fillable playbook documents, drafting each with a Claude or OpenRouter API key (called directly from the browser — no backend), and exporting a README + `/docs` folder as a zip. See `docs/changelog.md` on the published site for details. GitHub push is a planned follow-up (Epic 3 of the Phase 2 plan).
+Added the Vibe-Spec Tool (`/tool/`): an interactive, entirely client-side page for working through all 14 fillable playbook documents, drafting each with a Claude or OpenRouter API key (called directly from the browser — no backend), and exporting a README + `/docs` folder as a zip. Drafts stream in live, and Next/Previous buttons (with auto-save and a progress bar) let you run through every document in order with no manual saving. See `docs/changelog.md` on the published site for details. GitHub push is a planned follow-up (Epic 3 of the Phase 2 plan).
 
 ## v1.1 — 2026-09-07
 

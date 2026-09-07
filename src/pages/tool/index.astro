@@ -60,6 +60,11 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 				<nav class="step-list" id="step-list" aria-label="Playbook steps"></nav>
 
 				<main class="step-panel">
+					<div class="progress-track" role="progressbar" aria-label="Playbook progress">
+						<div class="progress-fill" id="progress-fill"></div>
+					</div>
+					<p class="progress-label" id="progress-label"></p>
+
 					<div class="step-header">
 						<h2 id="step-title"></h2>
 						<a id="step-readmore" href="#" target="_blank" rel="noopener">Read the full guidance →</a>
@@ -75,8 +80,13 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 					</div>
 
 					<div class="actions">
-						<button id="draft-btn" type="button">Draft with AI</button>
+						<button id="draft-btn" type="button">
+							<span id="draft-btn-label">Draft with AI</span>
+						</button>
 						<span id="draft-status" class="status"></span>
+					</div>
+					<div class="draft-progress" id="draft-progress" hidden>
+						<div class="draft-progress-fill"></div>
 					</div>
 
 					<div class="field">
@@ -88,6 +98,12 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 						<button id="save-btn" type="button">Save</button>
 						<button id="reset-btn" type="button" class="secondary">Reset to blank template</button>
 						<span id="save-status" class="status"></span>
+					</div>
+
+					<div class="stepper-nav">
+						<button id="prev-step-btn" type="button" class="secondary">◀ Previous</button>
+						<span id="stepper-position" class="status"></span>
+						<button id="next-step-btn" type="button">Next ▶</button>
 					</div>
 				</main>
 			</div>
@@ -111,6 +127,7 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 		--text-muted: #6b6b75;
 		--accent: #7c3aed;
 		--accent-text: #ffffff;
+		--accent-glow: rgba(124, 58, 237, 0.35);
 		--danger: #c22;
 	}
 
@@ -123,6 +140,7 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 			--text-muted: #a3a3ad;
 			--accent: #a78bfa;
 			--accent-text: #17171b;
+			--accent-glow: rgba(167, 139, 250, 0.35);
 		}
 	}
 
@@ -342,9 +360,65 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 		color: var(--danger);
 	}
 
+	.progress-track {
+		height: 4px;
+		border-radius: 2px;
+		background: var(--border);
+		overflow: hidden;
+	}
+	.progress-fill {
+		height: 100%;
+		width: 0%;
+		background: var(--accent);
+		transition: width 0.25s ease;
+	}
+	.progress-label {
+		margin: 0;
+		font-size: 0.75rem;
+		color: var(--text-muted);
+	}
+
+	.draft-progress {
+		height: 3px;
+		border-radius: 2px;
+		background: var(--border);
+		overflow: hidden;
+		position: relative;
+	}
+	.draft-progress-fill {
+		position: absolute;
+		top: 0;
+		left: -40%;
+		height: 100%;
+		width: 40%;
+		background: var(--accent);
+		animation: draft-progress-slide 1.1s ease-in-out infinite;
+	}
+	@keyframes draft-progress-slide {
+		0% {
+			left: -40%;
+		}
+		100% {
+			left: 100%;
+		}
+	}
+
 	#doc-editor {
 		flex: 1;
 		min-height: 20rem;
+		transition: box-shadow 0.2s ease;
+	}
+	#doc-editor.drafting {
+		box-shadow: 0 0 0 3px var(--accent-glow);
+	}
+
+	.stepper-nav {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		padding-top: 0.5rem;
+		border-top: 1px solid var(--border);
 	}
 
 	.export-bar {

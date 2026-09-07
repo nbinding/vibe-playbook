@@ -28,22 +28,30 @@ const el = {
 	modelInput: document.getElementById("model-input") as HTMLInputElement,
 	clearData: document.getElementById("clear-data") as HTMLButtonElement,
 	stepList: document.getElementById("step-list") as HTMLElement,
+	progressFill: document.getElementById("progress-fill") as HTMLDivElement,
+	progressLabel: document.getElementById("progress-label") as HTMLParagraphElement,
 	stepTitle: document.getElementById("step-title") as HTMLHeadingElement,
 	stepReadmore: document.getElementById("step-readmore") as HTMLAnchorElement,
 	contextNote: document.getElementById("step-context-note") as HTMLParagraphElement,
 	notesLabel: document.getElementById("notes-label") as HTMLLabelElement,
 	notesInput: document.getElementById("notes-input") as HTMLTextAreaElement,
 	draftBtn: document.getElementById("draft-btn") as HTMLButtonElement,
+	draftBtnLabel: document.getElementById("draft-btn-label") as HTMLSpanElement,
 	draftStatus: document.getElementById("draft-status") as HTMLSpanElement,
+	draftProgress: document.getElementById("draft-progress") as HTMLDivElement,
 	docEditor: document.getElementById("doc-editor") as HTMLTextAreaElement,
 	saveBtn: document.getElementById("save-btn") as HTMLButtonElement,
 	resetBtn: document.getElementById("reset-btn") as HTMLButtonElement,
 	saveStatus: document.getElementById("save-status") as HTMLSpanElement,
+	prevBtn: document.getElementById("prev-step-btn") as HTMLButtonElement,
+	nextBtn: document.getElementById("next-step-btn") as HTMLButtonElement,
+	stepperPosition: document.getElementById("stepper-position") as HTMLSpanElement,
 	exportBtn: document.getElementById("export-btn") as HTMLButtonElement,
 	exportSummary: document.getElementById("export-summary") as HTMLSpanElement,
 };
 
 let currentStepId = STEPS[0]?.id;
+let isDrafting = false;
 
 function getStep(id: string): StepDoc {
 	const step = STEPS.find((s) => s.id === id);
@@ -54,6 +62,17 @@ function getStep(id: string): StepDoc {
 function getPreviousStep(step: StepDoc): StepDoc | undefined {
 	if (step.order === 0) return undefined;
 	return STEPS.find((s) => s.order === step.order - 1);
+}
+
+function getNextStep(step: StepDoc): StepDoc | undefined {
+	return STEPS.find((s) => s.order === step.order + 1);
+}
+
+/** Saves whatever's currently in the editor for the given step, silently (no status text change). */
+function silentSave(stepId: string): void {
+	saveDoc(stepId, el.docEditor.value);
+	renderStepList();
+	renderExportSummary();
 }
 
 function renderStepList(): void {
@@ -69,7 +88,7 @@ function renderStepList(): void {
 		btn.appendChild(dot);
 		btn.appendChild(document.createTextNode(step.title));
 
-		btn.addEventListener("click", () => selectStep(step.id));
+		btn.addEventListener("click", () => goToStep(step.id, { saveCurrent: true }));
 		el.stepList.appendChild(btn);
 	}
 }
@@ -81,7 +100,15 @@ function renderExportSummary(): void {
 function renderStep(): void {
 	const step = getStep(currentStepId);
 	const previous = getPreviousStep(step);
+	const next = getNextStep(step);
 	const previousDoc = previous ? getDoc(previous.id) : undefined;
+
+	el.progressFill.style.width = `${(step.order / (STEPS.length - 1)) * 100}%`;
+	el.progressLabel.textContent = `Step ${step.order + 1} of ${STEPS.length}`;
+	el.stepperPosition.textContent = `${step.order + 1} / ${STEPS.length}`;
+	el.prevBtn.disabled = !previous;
+	el.nextBtn.disabled = !next;
+	el.nextBtn.textContent = next ? "Next ▶" : "That's the last step ✓";
 
 	el.stepTitle.textContent = step.title;
 	el.stepReadmore.href = `${BASE}${step.pageSlug}/`;
@@ -124,7 +151,9 @@ function formatRelativeTime(iso: string): string {
 	return new Date(iso).toLocaleDateString();
 }
 
-function selectStep(id: string): void {
+function goToStep(id: string, options: { saveCurrent: boolean }): void {
+	if (isDrafting) return;
+	if (options.saveCurrent) silentSave(currentStepId);
 	currentStepId = id;
 	renderStep();
 }
@@ -157,7 +186,6 @@ el.modelInput.addEventListener("input", persistSettingsFromForm);
 
 el.projectName.addEventListener("input", () => {
 	saveProjectMeta({ name: el.projectName.value });
-	renderStep();
 });
 
 el.clearData.addEventListener("click", () => {
@@ -187,20 +215,50 @@ el.draftBtn.addEventListener("click", async () => {
 	const previous = getPreviousStep(step);
 	const previousDoc = previous ? getDoc(previous.id) : undefined;
 	const prompt = buildUserPrompt(step, previousDoc, previous?.fileName, el.notesInput.value);
+	const draftingForStep = currentStepId;
 
+	isDrafting = true;
 	el.draftBtn.disabled = true;
-	el.draftStatus.textContent = "Drafting…";
+	el.saveBtn.disabled = true;
+	el.resetBtn.disabled = true;
+	el.prevBtn.disabled = true;
+	el.nextBtn.disabled = true;
+	el.draftBtnLabel.textContent = "Drafting…";
+	el.draftStatus.textContent = "Waking up the model…";
 	el.draftStatus.classList.remove("error");
+	el.draftProgress.hidden = false;
+	el.docEditor.classList.add("drafting");
+	el.docEditor.readOnly = true;
+	el.docEditor.value = "";
 
 	try {
-		const draft = await draftDocument(settings, prompt);
-		el.docEditor.value = draft;
-		el.draftStatus.textContent = "Drafted — review it, then Save.";
+		const draft = await draftDocument(settings, prompt, (partial) => {
+			if (currentStepId !== draftingForStep) return; // user navigated away mid-stream
+			el.docEditor.value = partial;
+			el.docEditor.scrollTop = el.docEditor.scrollHeight;
+			el.draftStatus.textContent = `Drafting… ${partial.length.toLocaleString()} characters so far`;
+		});
+		if (currentStepId === draftingForStep) {
+			el.docEditor.value = draft;
+			el.draftStatus.textContent = "Drafted — review it, then Save.";
+		}
 	} catch (err) {
-		el.draftStatus.textContent = err instanceof ProviderError ? err.message : "Something went wrong.";
-		el.draftStatus.classList.add("error");
+		if (currentStepId === draftingForStep) {
+			el.draftStatus.textContent = err instanceof ProviderError ? err.message : "Something went wrong.";
+			el.draftStatus.classList.add("error");
+		}
 	} finally {
+		isDrafting = false;
 		el.draftBtn.disabled = false;
+		el.saveBtn.disabled = false;
+		el.resetBtn.disabled = false;
+		el.draftBtnLabel.textContent = "Draft with AI";
+		el.draftProgress.hidden = true;
+		el.docEditor.classList.remove("drafting");
+		el.docEditor.readOnly = false;
+		const step = getStep(currentStepId);
+		el.prevBtn.disabled = !getPreviousStep(step);
+		el.nextBtn.disabled = !getNextStep(step);
 	}
 });
 
@@ -218,6 +276,16 @@ el.resetBtn.addEventListener("click", () => {
 		return;
 	}
 	el.docEditor.value = step.template;
+});
+
+el.prevBtn.addEventListener("click", () => {
+	const previous = getPreviousStep(getStep(currentStepId));
+	if (previous) goToStep(previous.id, { saveCurrent: true });
+});
+
+el.nextBtn.addEventListener("click", () => {
+	const next = getNextStep(getStep(currentStepId));
+	if (next) goToStep(next.id, { saveCurrent: true });
 });
 
 el.exportBtn.addEventListener("click", () => {
