@@ -5,6 +5,10 @@ description: What's changed in the Vibe Coding Playbook.
 
 The playbook is versioned as a whole. Individual steps will keep getting refined as people actually use them — this page tracks what changed and when.
 
+## v1.2 — 2026-09-07
+
+Added the [Vibe-Spec Tool](/vibe-playbook/tool/) — an interactive, entirely client-side way to work through all 14 fillable documents (the 11 steps, with Full Build split into its 4 parts), draft each one with your own Claude or OpenRouter API key, and export a README + `/docs` folder as a `.zip`. Nothing is sent anywhere except straight from your browser to the provider you choose; no account, no server, no data collection. GitHub push (instead of zip download) is planned as a follow-up.
+
 ## v1.1 — 2026-09-07
 
 - Added **11 · Feedback Loop** (Launch phase) — picking a channel for post-launch feedback (a plain form, or a FOSS/hosted board tool like Fider, Astuto, ClearFlask, Quackback, or Canny) and a triage routine for turning it into future work.

@@ -16,6 +16,8 @@ Eleven steps, each with a fill-in template and a matching LLM prompt that consum
 10. Publishing
 11. Feedback Loop
 
+There's also an interactive [Vibe-Spec Tool](https://nbinding.github.io/vibe-playbook/tool/) — work through all 14 documents in the browser, draft each with your own Claude or OpenRouter API key (called directly from your browser, no backend), and export a README + `/docs` folder as a zip.
+
 See [CHANGELOG.md](./CHANGELOG.md) for version history.
 
 ## Developing

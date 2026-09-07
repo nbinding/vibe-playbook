@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2 — 2026-09-07
+
+Added the Vibe-Spec Tool (`/tool/`): an interactive, entirely client-side page for working through all 14 fillable playbook documents, drafting each with a Claude or OpenRouter API key (called directly from the browser — no backend), and exporting a README + `/docs` folder as a zip. See `docs/changelog.md` on the published site for details. GitHub push is a planned follow-up (Epic 3 of the Phase 2 plan).
+
 ## v1.1 — 2026-09-07
 
 Added an 11th step, Feedback Loop (post-launch feedback channel + triage routine); a research toolkit to step 01 pointing at where to actually look for evidence (Reddit, Product Hunt, Show HN, app store reviews) plus paid audience-research tools; a flow-validation section to step 03 (Quant-UX, Reddit testing groups); and a visual-iteration tools section to step 04 (pen.dev, OpenPencil, Claude Design, Google Stitch). See `docs/changelog.md` on the published site for details.
