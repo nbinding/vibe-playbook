@@ -53,6 +53,7 @@ export default defineConfig({
 					],
 				},
 				{ label: 'Changelog', slug: 'changelog' },
+				{ label: 'Vibe-Spec Tool ↗', link: '/tool/', attrs: { target: '_self' } },
 			],
 		}),
 	],
