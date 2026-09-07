@@ -22,6 +22,8 @@ const BASE = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 const el = {
 	settingsToggle: document.getElementById("settings-toggle") as HTMLButtonElement,
 	settingsPanel: document.getElementById("settings-panel") as HTMLDivElement,
+	settingsBackdrop: document.getElementById("settings-backdrop") as HTMLDivElement,
+	settingsClose: document.getElementById("settings-close") as HTMLButtonElement,
 	projectName: document.getElementById("project-name") as HTMLInputElement,
 	providerSelect: document.getElementById("provider-select") as HTMLSelectElement,
 	apiKey: document.getElementById("api-key") as HTMLInputElement,
@@ -174,8 +176,30 @@ function persistSettingsFromForm(): void {
 	});
 }
 
+function openSettings(): void {
+	el.settingsPanel.classList.add("open");
+	el.settingsBackdrop.classList.add("open");
+	el.settingsPanel.inert = false;
+	el.settingsToggle.setAttribute("aria-expanded", "true");
+}
+
+function closeSettings(): void {
+	el.settingsPanel.classList.remove("open");
+	el.settingsBackdrop.classList.remove("open");
+	el.settingsPanel.inert = true;
+	el.settingsToggle.setAttribute("aria-expanded", "false");
+}
+
+el.settingsPanel.inert = true;
+
 el.settingsToggle.addEventListener("click", () => {
-	el.settingsPanel.hidden = !el.settingsPanel.hidden;
+	if (el.settingsPanel.classList.contains("open")) closeSettings();
+	else openSettings();
+});
+el.settingsClose.addEventListener("click", closeSettings);
+el.settingsBackdrop.addEventListener("click", closeSettings);
+document.addEventListener("keydown", (e) => {
+	if (e.key === "Escape" && el.settingsPanel.classList.contains("open")) closeSettings();
 });
 
 for (const input of [el.providerSelect, el.apiKey, el.modelInput]) {
@@ -203,7 +227,7 @@ el.draftBtn.addEventListener("click", async () => {
 	if (!settings.apiKey.trim()) {
 		el.draftStatus.textContent = "Add an API key in Settings first.";
 		el.draftStatus.classList.add("error");
-		el.settingsPanel.hidden = false;
+		openSettings();
 		return;
 	}
 

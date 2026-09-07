@@ -24,10 +24,17 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 			<header class="topbar">
 				<a class="brand" href={base}>← Vibe Coding Playbook</a>
 				<h1>Vibe-Spec Tool</h1>
-				<button id="settings-toggle" type="button">Settings</button>
+				<button id="settings-toggle" type="button" aria-expanded="false" aria-controls="settings-panel">
+					Settings
+				</button>
 			</header>
 
-			<div id="settings-panel" class="settings-panel" hidden>
+			<div id="settings-backdrop" class="settings-backdrop"></div>
+			<div id="settings-panel" class="settings-panel" role="dialog" aria-modal="true" aria-label="Settings">
+				<div class="settings-panel-header">
+					<h2>Settings</h2>
+					<button id="settings-close" type="button" class="icon-btn" aria-label="Close settings">✕</button>
+				</div>
 				<div class="field">
 					<label for="project-name">Project name</label>
 					<input id="project-name" type="text" placeholder="e.g. Calorie Sync" />
@@ -185,13 +192,67 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 		color: var(--text);
 	}
 
+	.settings-backdrop {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.35);
+		opacity: 0;
+		visibility: hidden;
+		transition:
+			opacity 0.2s ease,
+			visibility 0.2s ease;
+		z-index: 40;
+	}
+	.settings-backdrop.open {
+		opacity: 1;
+		visibility: visible;
+	}
+
 	.settings-panel {
 		display: grid;
+		align-content: start;
 		gap: 0.75rem;
-		padding: 1rem 1.25rem;
-		background: var(--bg-panel);
-		border-bottom: 1px solid var(--border);
-		max-width: 32rem;
+		padding: 1.25rem;
+		background: var(--bg);
+		border-left: 1px solid var(--border);
+		position: fixed;
+		top: 0;
+		right: 0;
+		height: 100vh;
+		width: min(24rem, 90vw);
+		box-shadow: -8px 0 24px rgba(0, 0, 0, 0.15);
+		overflow-y: auto;
+		transform: translateX(100%);
+		visibility: hidden;
+		transition:
+			transform 0.25s ease,
+			visibility 0.25s ease;
+		z-index: 50;
+	}
+	.settings-panel.open {
+		transform: translateX(0);
+		visibility: visible;
+	}
+
+	.settings-panel-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+	.settings-panel-header h2 {
+		margin: 0;
+		font-size: 1.1rem;
+	}
+
+	.icon-btn {
+		background: none;
+		border: none;
+		color: var(--text-muted);
+		font-size: 1rem;
+		padding: 0.25rem 0.5rem;
+	}
+	.icon-btn:hover {
+		color: var(--text);
 	}
 
 	.field {
